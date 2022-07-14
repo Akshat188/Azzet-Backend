@@ -32,7 +32,7 @@ def login(request):
         username = body['username']
         password = body['password']
         print("hello")
-        user = User.objects.get(username=username,password=password)
+        user = authenticate(username=username,password=password)
         print(user)
         if user is not None :
             appUser = AppUser.objects.get(user=user)
@@ -63,4 +63,45 @@ def signUp(request):
         user.save()
         appUser= AppUser.objects.create(user=user,name=fullname,email=email,mobileNo=phone,gender=gender,dob=dob)
         appUser.save()
+        return Response(status=200)
+
+@api_view(['GET',])
+def getAllLiveContests(request):
+	l=[]
+	for i in League.objects.all():
+		l.append(i.name)
+	return Response(l)
+
+@api_view(['POST',])
+def joinContest(request):
+    if request.method == 'POST':
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        leaguename = body['leaguename']
+        username = body['username']
+        user = User.objects.get(username=username)
+        league = League.objects.get(name=leaguename)
+        userL,_ = UserLeague.objects.get_or_create(user=user,league=league)
+        userL.save()
+        return Response(status=200)
+
+@api_view(['POST',])
+def Trade(request):
+    if request.method == 'POST':
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        symbol = body['symbol']
+        units = body['units']
+        leaguename = body['leaguename']
+        username = body['username']
+        user = User.objects.get(username=username)
+        league = League.objects.get(name=leaguename)
+        userL,_ = UserLeague.objects.get_or_create(user=user,league=league)
+        record = Holding.objects.get(userLeague=userL,stockSymbol=symbol)
+        if record is None:
+            holding=Holding.objects.create(userLeague=userL,stockSymbol=symbol,units=units)
+            holding.save()
+        else:
+            record.update(units=record.units+units)
+            record.save()
         return Response(status=200)

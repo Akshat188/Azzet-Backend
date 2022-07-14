@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from phonenumber_field.modelfields import PhoneNumberField
+from datetime import datetime
 
 class AppUser(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -12,18 +13,18 @@ class AppUser(models.Model):
 
 class League(models.Model):
 	name = models.CharField(max_length=255)
-	startTime = models.DateField()
-	endTime = models.DateField()
-	entryFee = models.IntegerField()
-	totalSpots = models.IntegerField()
-	prizePool = models.IntegerField()
+	startTime = models.DateField(default=datetime.now())
+	endTime = models.DateField(default=datetime.now())
+	entryFee = models.IntegerField(default=20)
+	totalSpots = models.IntegerField(default=100)
+	prizePool = models.IntegerField(default=1000)
 
 class UserLeague(models.Model):
-	user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	league = models.ForeignKey(League, on_delete=models.CASCADE)
 	balance = models.IntegerField(default=100000)
 
 class Holding(models.Model):
 	userLeague = models.ForeignKey(UserLeague, on_delete=models.CASCADE)
-	stockSymbol = models.CharField(max_length=5)
+	stockSymbol = models.CharField(max_length=20)
 	units = models.IntegerField()
